@@ -7,32 +7,20 @@ import { useRouter } from "next/router";
 import { isTokenValid } from "@/utils/jwtVerifier";
 import Navbar from "@/components/navbar";
 import logo from "../images/logo_main.png";
+import UploadProject from "@/components/upload-modal";
 import ProjectCard from "@/components/project-card";
 import axios from "axios";
-import { headers } from "../../next.config";
+import { headers } from "next/dist/client/components/headers";
 
 const inter = Inter({ subsets: ["latin"] });
-export default function Home() {
+export default function Myproject() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [profile, setProfile] = useState({});
-  const [projects, setProjects] = useState([]);
+  const [projects, setProjects] = useState(false);
 
-  const getProfile = async () => {
+  const getMyProjects = async () => {
     const response = await axios.get(
-      "http://localhost:8080/api/client/viewProfile",
-      {
-        headers: {
-          Authorization: "Bearer " + localStorage.getItem("token"),
-        },
-      }
-    );
-    setProfile(response.data);
-  };
-
-  const getAllProjects = async () => {
-    const response = await axios.get(
-      "http://localhost:8080/api/client/getAllProjects?pageNo=0&pageSize=10",
+      "http://localhost:8080/api/client/getMyProjects?pageNo=0&pageSize=10",
       {
         headers: {
           Authorization: "Bearer " + localStorage.getItem("token"),
@@ -46,16 +34,13 @@ export default function Home() {
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
-    }, 2000);
+    }, 1500);
   }, []);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token || !isTokenValid(token)) router.push("/");
-    else {
-      getProfile();
-      getAllProjects();
-    }
+    else getMyProjects();
   }, []);
 
   if (loading)
@@ -68,13 +53,14 @@ export default function Home() {
     );
 
   return (
-    <>
-      <Navbar name={profile.firstName} />
-      <div className='flex flex-col'>
+    <div>
+      <section className='flex flex-col'>
+        <Navbar />
+        <div className='p-6'>
+          <UploadProject />
+        </div>
         <div className='p-6 space-y-3'>
-          <h1 className='font-bold text-3xl text-gray-600'>
-            All Students Projects
-          </h1>
+          <h1 className='font-bold text-3xl text-gray-600'>My Projects</h1>
           <div className='flex flex-wrap justify-center space-x-3 space-y-3'>
             {projects &&
               projects.map((project) => (
@@ -82,7 +68,7 @@ export default function Home() {
               ))}
           </div>
         </div>
-      </div>
-    </>
+      </section>
+    </div>
   );
 }

@@ -5,19 +5,36 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { isTokenValid } from '@/utils/jwtVerifier';
+import axios from "axios";
 
-const inter = Inter({ subsets: ['latin'] })
+const inter = Inter({ subsets: ["latin"] });
 
 export default function Login() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if(token && isTokenValid(token))
+  const handleLogin = async () => {
+    try {
+      const response = await axios.post(
+        "http://localhost:8080/api/auth/authenticate",
+        {
+          email: email,
+          password: password,
+        }
+      );
+      localStorage.setItem("token", response.data.token);
       router.push("/home");
-  })
+    } catch (err) {
+      alert("Bad Credentials");
+      console.log(err);
+    }
+  };
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token && isTokenValid(token)) router.push("/home");
+  });
 
   return (
     <main className='h-[100vh] flex justify-center items-center'>
@@ -29,14 +46,14 @@ export default function Login() {
         </h1>
         <div className='flex flex-col space-y-6 w-4/5 mx-auto'>
           <TextField
-            id='outlined-controlled'
+            id='email'
             label='Email'
             color='warning'
             required
             onChange={(e) => setEmail(e.target.value)}
           />
           <TextField
-            id='outlined-controlled'
+            id='password'
             label='Password'
             type='password'
             color='warning'
@@ -47,11 +64,11 @@ export default function Login() {
             variant='outlined'
             color='warning'
             type='submit'
-            onClick={() => alert(email + " " + password)}>
+            onClick={() => handleLogin()}>
             Login
           </Button>
         </div>
-        <Link href="/register" className='text-right text-sm text-gray-500'>
+        <Link href='/register' className='text-right text-sm text-gray-500'>
           New here? Signup now!
         </Link>
       </section>

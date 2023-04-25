@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { isTokenValid } from "@/utils/jwtVerifier";
+import axios from "axios";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -18,11 +19,32 @@ export default function Register() {
   const [year, setYear] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token && isTokenValid(token)) router.push("/home");
   });
+  const registerClient = async () => {
+    try {
+      const response = await axios.post(
+        "http://localhost:8080/api/auth/register",
+        {
+          firstName: firstName,
+          lastName: lastName,
+          collegeName: college,
+          degree: degree,
+          department: department,
+          yearOfStudy: year,
+          email: email,
+          password: password,
+          role: "ROLE_CLIENT",
+        }
+      );
+      localStorage.setItem("token", response.data.token);
+      router.push("/home");
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   return (
     <main className='flex justify-center items-center py-10'>
@@ -94,7 +116,7 @@ export default function Register() {
             variant='outlined'
             color='warning'
             type='submit'
-            onClick={() => alert(email + " " + password)}>
+            onClick={registerClient}>
             Signup
           </Button>
         </div>

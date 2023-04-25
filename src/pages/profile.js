@@ -7,16 +7,14 @@ import { useRouter } from "next/router";
 import { isTokenValid } from "@/utils/jwtVerifier";
 import Navbar from "@/components/navbar";
 import logo from "../images/logo_main.png";
-import ProjectCard from "@/components/project-card";
+import ProfileCard from "@/components/profile";
 import axios from "axios";
-import { headers } from "../../next.config";
 
 const inter = Inter({ subsets: ["latin"] });
-export default function Home() {
+export default function Profile() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [profile, setProfile] = useState({});
-  const [projects, setProjects] = useState([]);
 
   const getProfile = async () => {
     const response = await axios.get(
@@ -30,59 +28,36 @@ export default function Home() {
     setProfile(response.data);
   };
 
-  const getAllProjects = async () => {
-    const response = await axios.get(
-      "http://localhost:8080/api/client/getAllProjects?pageNo=0&pageSize=10",
-      {
-        headers: {
-          Authorization: "Bearer " + localStorage.getItem("token"),
-        },
-      }
-    );
-    setProjects(response.data.content);
-  };
-
   useEffect(() => {
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
-    }, 2000);
+    }, 1500);
   }, []);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token || !isTokenValid(token)) router.push("/");
-    else {
-      getProfile();
-      getAllProjects();
-    }
+    else getProfile();
   }, []);
 
   if (loading)
     return (
       <div className='z-50 h-screen w-screen overflow-hidden'>
-        <div className='h-[100vh] bg-[#383635]  w-full text-center flex justify-center items-center text-white font-black p-10'>
+        <div className='h-[100vh] bg-[#383635]  w-full text-center flex justify-center items-center text-white font-black p-5'>
           <Image src={logo} className='animate-bounce h-52 w-52' />
         </div>
       </div>
     );
 
   return (
-    <>
-      <Navbar name={profile.firstName} />
-      <div className='flex flex-col'>
-        <div className='p-6 space-y-3'>
-          <h1 className='font-bold text-3xl text-gray-600'>
-            All Students Projects
-          </h1>
-          <div className='flex flex-wrap justify-center space-x-3 space-y-3'>
-            {projects &&
-              projects.map((project) => (
-                <ProjectCard title={project.title} project={project} />
-              ))}
-          </div>
+    <div>
+      <section className='flex flex-col'>
+        <Navbar />
+        <div className='h-[95vh] flex items-center justify-center py-4 bg-gray-200'>
+          <ProfileCard profile={profile} />
         </div>
-      </div>
-    </>
+      </section>
+    </div>
   );
 }
